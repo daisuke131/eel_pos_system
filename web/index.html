@@ -23,7 +23,7 @@
     <div class="container">
       <div class="input-group my-3">
         <input
-          type="tel"
+          type="text"
           id="input_product_code"
           class="form-control"
           placeholder="商品コードを入力してくだい。"
@@ -31,20 +31,21 @@
         />
         <input
           type="number"
-          id="input_quantity"
+          id="input_amount"
           class="form-control"
           placeholder="個数を入力してくだい。"
         />
         <input
           type="button"
-          id="input-group-button-right add_button"
+          id="input-group-button-right"
           class="btn btn-outline-primary"
           value="追加"
+          onclick="add_order_item()"
         />
       </div>
       <textarea
         readonly
-        id="log-output"
+        id="output-order"
         class="form-control"
         rows="15"
         style="resize: none"
