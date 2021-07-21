@@ -9,7 +9,7 @@ size = (600, 700)
 
 
 @eel.expose
-def add_order_item(item_code: str, amount: str):
+def add_order_item(item_code: str, amount: str) -> None:
     global system
     if system.order is None:
         system.init_order()
@@ -21,7 +21,24 @@ def add_order_item(item_code: str, amount: str):
         eel.alert_js(f"『{item_code}』は商品マスターに登録されていません")
 
 
-def init_pos_system():
+@eel.expose
+def order_process(pay_price: str) -> None:
+    global system
+    pay_text, pay_flg = system.order.pay_off(int(pay_price))
+    eel.alert_js(pay_text)
+    if pay_flg:
+        system.order.write_receipt()
+        eel.alert_js("レシートを発行しました。")
+        reset_order()
+
+
+@eel.expose
+def reset_order() -> None:
+    system.init_order()
+    eel.reset_object()
+
+
+def init_pos_system() -> None:
     global system
     system = PosSystem()
     system.add_item_master()

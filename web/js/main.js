@@ -1,15 +1,32 @@
 const add_order_item = async () => {
-    let input_product_code = $("#input_product_code").val()
-    let input_amount = $("#input_amount").val()
+    let input_product_code = $("#input_product_code").val();
+    let input_amount = $("#input_amount").val();
     if (!input_product_code) {
-        alert("商品コードを入力してください。")
-        return
+        alert("商品コードを入力してください。");
+        return;
     }
     else if (!input_amount) {
-        alert("数量を入力してください。")
-        return
-    }
+        alert("数量を入力してください。");
+        return;
+    };
     await eel.add_order_item(input_product_code, input_amount);
+}
+
+
+const order_process = async () => {
+    if (!$("#output-order").val()) {
+        alert("買い物かごが空です。");
+        return;
+    } else if (!$("#input_pay").val()) {
+        alert("支払い金額を入力してください。");
+        return;
+    } else {
+        await eel.order_process($("#input_pay").val());
+    }
+}
+
+const reset_order = async () => {
+    await eel.reset_order();
 }
 
 eel.expose(output_oder_list)
@@ -18,9 +35,15 @@ function output_oder_list(order_text) {
     $("#output-order").scrollTop = $("#output-order").scrollHeight;
 }
 
+eel.expose(reset_object)
+function reset_object() {
+    document.order_form.reset();
+}
+
+
 eel.expose(alert_js)
 function alert_js(text) {
-    alert(text)
+    alert(text);
 }
 
 // 半角数字のみ入力可
