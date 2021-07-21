@@ -1,17 +1,14 @@
 import os
-
 # import sys
 from datetime import datetime
 
 # import eel
 import pandas as pd
 
-datetime_now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 READ_CSV_PATH = os.path.join(os.getcwd(), "csv/product_master.csv")
-RECEIPT_PATH = os.path.join(os.getcwd(), f"receipt/{datetime_now}.txt")
+RECEIPT_PATH = os.path.join(os.getcwd(), "receipt/{datetime}.txt")
 
 
-# 商品クラス
 class Item:
     def __init__(self, item_code: str, item_name: str, price: int) -> None:
         self.item_code: str = item_code
@@ -28,9 +25,12 @@ class Order:
         self.item_order_list = []
         self.item_amount_list = []
         self.total_price: int = 0
+        self.change_price: int = 0
+        self.pay_price: int = 0
+        self.receipt_text: str
         self.item_master = item_master
 
-    def fetch_item_data(self, item_code: str):
+    def fetch_item_data(self, item_code: str) -> tuple[str, str]:
         for item in self.item_master:
             if item.item_code == item_code:
                 # item_data = {
@@ -81,14 +81,14 @@ class Order:
     #     self.item_order_list.append(item_code)
 
     def output_oder_list(self) -> str:
-        output_oder_text: str = "==========ご注文リスト==========\n"
+        oder_text = "==========ご注文リスト==========\n"
         self.total_price = 0
         count = 0
         for order_item_code, order_count in zip(
             self.item_order_list, self.item_amount_list
         ):
-            item_data = self.fetch_item_data(order_item_code)
-            item_total_price: int = int(item_data[1]) * int(order_count)
+            item_name, price = self.fetch_item_data(order_item_code)
+            item_total_price: int = int(price) * int(order_count)
             self.total_price += item_total_price
             count += 1
             # self.write_receipt("商品コード：{}".format(item_data["item_code"]))
@@ -97,42 +97,51 @@ class Order:
             # self.write_receipt("数量：{}".format("{:,}".format(order_count)))
             # self.write_receipt("小計：￥{}円".format("{:,}".format(item_total_price)))
             # self.write_receipt("===================================")
-            output_oder_text += (
-                f"{count}.商品名:{item_data[0]} 値段:{item_data[1]}円 個数:{order_count}個\n"
-            )
+            oder_text += f"{count}.商品名:{item_name} 値段:{price}円 個数:{order_count}個\n"
         # self.write_receipt("合計：￥{}円".format("{:,}".format(self.total_price)))
-        output_oder_text += "=============================\n"
+        oder_text += "=============================\n"
         # print(f"合計：￥{"{:,}".format(self.total_price)}円になります。")
-        output_oder_text += f"合計：￥{self.total_price:,}円"
-        return output_oder_text
+        oder_text += f"合計：￥{self.total_price:,}円\n"
+        self.receipt_text = oder_text
+        return oder_text
 
-    # def write_receipt(self, write_text: str):
-    #     with open(
-    #         RECEIPT_PATH,
-    #         mode="a",
-    #         encoding="utf_8_sig",
-    #     ) as f:
-    #         f.write(write_text + "\n")
+    def pay_off(self, pay_price: int) -> tuple[str, bool]:
+        # while True:
+        # pay_price_str: str = input("支払い金額を入力してください>>")
+        # pay_price_str = pay_price_str.strip()
+        # try:
+        # pay_price: int = int(pay_price_str)
+        pay_flg = True
+        self.pay_price = pay_price
+        self.change_price = pay_price - self.total_price
+        # self.write_receipt()
+        # self.write_receipt("おつり：￥{}円".format("{:,}".format(change_price)))
+        if self.change_price > 0:
+            pay_text = f"{self.change_price:,}円のお返しになります。"
+        elif self.change_price == 0:
+            pay_text = f"{self.total_price:,}円ちょうどお預かりします。"
+        else:
+            pay_text = "料金が不足しています。"
+            pay_flg = False
+            # pass
+        return pay_text, pay_flg
 
-    def pay_off(self):
-        while True:
-            pay_price_str: str = input("支払い金額を入力してください>>")
-            pay_price_str = pay_price_str.strip()
-            try:
-                pay_price: int = int(pay_price_str)
-                if self.total_price <= pay_price:
-                    break
-                else:
-                    print("料金が不足しています。")
-                    pass
-            except Exception:
-                print("金額を正しく入力してください。")
-                pass
-        change_price: int = pay_price - self.total_price
-        self.write_receipt("預かり金額：￥{}円".format("{:,}".format(pay_price)))
-        self.write_receipt("おつり：￥{}円".format("{:,}".format(change_price)))
-        if change_price > 0:
-            print("{}円のお返しになります。".format("{:,}".format(change_price)))
+    def write_receipt(self):
+        self.receipt_text += f"お預かり：￥{self.pay_price:,}円\n"
+        self.receipt_text += f"お釣り：￥{self.change_price:,}円"
+        csv_path = RECEIPT_PATH.format(
+            datetime=datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        )
+        with open(
+            csv_path,
+            mode="w",
+            encoding="utf_8_sig",
+        ) as f:
+            f.write(self.receipt_text)
+
+    # except Exception:
+    # print("金額を正しく入力してください。")
+    # pass
 
 
 # メイン処理
@@ -172,13 +181,13 @@ class Order:
 
 class PosSystem:
     # def __init__(self, csv_path: str = None):
-    def __init__(self):
+    def __init__(self) -> None:
         self.item_master = []
         # self.csv_path = csv_path
         self.order = None
 
     # マスタ登録(課題３)
-    def add_item_master(self):
+    def add_item_master(self) -> bool:
         print("------- マスタ登録開始 ---------")
         count = 0
         try:
@@ -203,5 +212,5 @@ class PosSystem:
             # print("------- マスタ登録完了 ---------")
             return False
 
-    def init_order(self):
+    def init_order(self) -> None:
         self.order = Order(self.item_master)

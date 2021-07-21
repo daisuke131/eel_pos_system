@@ -15,17 +15,21 @@
 <body>
   <h1>posシステム</h1>
   <div class="container">
-    <div class="input-group my-3">
-      <input type="text" id="input_product_code" class="form-control input_number_only" placeholder="商品コードを入力してくだい。"
-        maxlength="3" />
-      <input type="text" id="input_amount" class="form-control input_number_only" placeholder="個数を入力してくだい。" />
-      <input type="button" id="input-group-button-right" class="btn btn-outline-primary" value="追加"
-        onclick="add_order_item()" />
-    </div>
-    <textarea readonly id="output-order" class="form-control" rows="15" style="resize: none"></textarea>
-    <div class="d-grid m-3">
-      <input id="order_button" class="btn btn-danger" type="button" value="注文" />
-    </div>
+    <form name="order_form">
+      <div class="input-group my-3">
+        <input type="text" id="input_product_code" class="form-control input_number_only" placeholder="商品コードを入力してくだい。"
+          maxlength="3" />
+        <input type="text" id="input_amount" class="form-control input_number_only" placeholder="個数を入力してくだい。" />
+        <input type="button" id="input-group-button-right" class="btn btn-outline-primary" value="追加"
+          onclick="add_order_item()" />
+      </div>
+      <input type="button" class="btn btn-outline-danger mb-3" value="リセット" onclick="reset_order()" />
+      <textarea readonly id="output-order" class="form-control" rows="15" style="resize: none"></textarea>
+      <div class="input-group my-3 float-end" style="width:300px;">
+        <input type="text" id="input_pay" class="form-control input_number_only" placeholder="お支払い金額を入力してくだい。" />
+        <input id="order_button" class="btn btn-danger" type="button" value="注文" onclick="order_process()" />
+      </div>
+    </form>
   </div>
 </body>
 
