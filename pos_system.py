@@ -56,7 +56,7 @@ class Order:
         return oder_text
 
     def pay_off(self, pay_price: int) -> tuple[str, bool]:
-        pay_flg = True
+        is_completed_payment = True
         self.pay_price = pay_price
         self.change_price = pay_price - self.total_price
         if self.change_price > 0:
@@ -65,8 +65,8 @@ class Order:
             pay_text = f"{self.total_price:,}円ちょうどお預かりします。"
         else:
             pay_text = "料金が不足しています。"
-            pay_flg = False
-        return pay_text, pay_flg
+            is_completed_payment = False
+        return pay_text, is_completed_payment
 
     def write_receipt(self):
         self.receipt_text += f"お預かり：￥{self.pay_price:,}円\n"
