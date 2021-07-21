@@ -1,3 +1,5 @@
+import sys
+
 import eel
 
 from desktop import start
@@ -24,9 +26,9 @@ def add_order_item(item_code: str, amount: str) -> None:
 @eel.expose
 def order_process(pay_price: str) -> None:
     global system
-    pay_text, pay_flg = system.order.pay_off(int(pay_price))
+    pay_text, is_completed_payment = system.order.pay_off(int(pay_price))
     eel.alert_js(pay_text)
-    if pay_flg:
+    if is_completed_payment:
         system.order.write_receipt()
         eel.alert_js("レシートを発行しました。")
         reset_order()
@@ -41,7 +43,10 @@ def reset_order() -> None:
 def init_pos_system() -> None:
     global system
     system = PosSystem()
-    system.add_item_master()
+    is_add_item_master: bool = system.add_item_master()
+    if not is_add_item_master:
+        print("システムを終了します。")
+        sys.exit()
 
 
 if __name__ == "__main__":
